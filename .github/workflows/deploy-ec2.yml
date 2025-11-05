@@ -40,7 +40,7 @@ jobs:
           name: mail-api-jar
 
       - name: Renomear JAR
-        run: mv mail-api-0.0.1-SNAPSHOT.jar mail-api.jar
+        run: mv mail-api-1.0.0-SNAPSHOT.jar mail-api.jar
 
       - name: Copiar JAR para EC2 (SCP)
         uses: appleboy/scp-action@v0.1.7
