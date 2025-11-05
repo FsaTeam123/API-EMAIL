@@ -2,7 +2,7 @@ name: Deploy API-EMAIL para EC2
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "main" ] # Mude para 'master' se o nome da sua branch for outro
   workflow_dispatch:
 
 jobs:
@@ -16,19 +16,18 @@ jobs:
       - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
-          java-version: '17'
+          java-version: '17' # Baseado no seu pom.xml [cite: 5, line 15]
           distribution: 'corretto'
 
       - name: Build com Maven
-        # Constrói o JAR pulando os testes
         run: mvn clean package -DskipTests
 
       - name: Upload JAR
-        # Salva o JAR para o próximo job
         uses: actions/upload-artifact@v4
         with:
           name: mail-api-jar
-          path: target/mail-api-0.0.1-SNAPSHOT.jar # Nome do JAR definido no pom.xml
+          # O nome do JAR vem do seu pom.xml [cite: 5, line 8]
+          path: target/mail-api-0.0.1-SNAPSHOT.jar
 
   deploy:
     name: Deploy (EC2)
@@ -36,27 +35,23 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Download JAR
-        # Baixa o JAR do job anterior
         uses: actions/download-artifact@v4
         with:
           name: mail-api-jar
 
       - name: Renomear JAR
-        # Renomeia para facilitar o script de deploy
         run: mv mail-api-0.0.1-SNAPSHOT.jar mail-api.jar
 
       - name: Copiar JAR para EC2 (SCP)
-        # Copia o JAR para uma pasta temporária no servidor
         uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.EC2_HOST }}
-          username: ${{ secrets.EC2_USER }} # Deve ser 'ec2-user' ou 'deploy'
-          key: ${{ secrets.EC2_SSH_KEY }}
+          username: ${{ secrets.EC2_USER }} # Assumindo 'ec2-user'
+          key: ${{ secrets.EC2_SSH_KEY }}     # Sua chave .pem
           source: "mail-api.jar"
-          target: "/tmp/"
+          target: "/tmp/" # Copia para uma pasta temporária
 
       - name: Executar Script de Deploy (SSH)
-        # Executa o script de deploy no servidor
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.EC2_HOST }}
@@ -66,10 +61,9 @@ jobs:
             set -e
             REMOTE_JAR="/tmp/mail-api.jar"
             
-            # Define a URL de Health Check (Porta 8086, conforme application.yml)
+            # Porta 8086, conforme seu application.yml [cite: 11, line 2]
             export HEALTH_URL="http://127.0.0.1:8086/actuator/health"
             export KEEP_RELEASES=5
             
-            # Executa o script de deploy específico deste serviço
-            # (Você precisa criar este script no servidor)
+            # Executa o script de deploy deste serviço
             /opt/api-email/deploy-email.sh "$REMOTE_JAR"
