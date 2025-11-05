@@ -27,7 +27,7 @@ jobs:
         with:
           name: mail-api-jar
           # O nome do JAR vem do seu pom.xml [cite: 5, line 8]
-          path: target/mail-api-0.0.1-SNAPSHOT.jar
+          path: target/mail-api-1.0.0-SNAPSHOT.jar
 
   deploy:
     name: Deploy (EC2)
